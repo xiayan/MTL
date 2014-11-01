@@ -24,7 +24,7 @@
 
 clear; clc;
 
-addpath('../../MALSAR/functions/joint_feature_learning/');
+addpath('../../MALSAR/functions/low_rank/');
 addpath('../../MALSAR/utils/');
 
 
@@ -40,45 +40,29 @@ for t = 1: length(X)
     X{t} = [X{t} ones(size(X{t}, 1), 1)]; % add bias.
 end
 
-all_trial = 1;
-all_rmse = zeros(2, all_trial);
-all_perf = zeros(8, all_trial);
-
-for tt = 1:all_trial
-
 % split data into training and testing.
 training_percent = 0.8;
 [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
 
-% the function used for evaluation.
-eval_func_str = 'eval_MTL_mse';
-higher_better = false;  % mse is lower the better.
-
-% cross validation fold
-cv_fold = 5;
-
-% optimization options
-opts = [];
-opts.maxIter = 100;
-
-% model parameter range
+num_tasks = length(X_tr);
+p = size(X_tr{1}, 2);
+W = zeros(p, num_tasks);
 param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 
-fprintf('Perform model selection via cross validation: \n')
-[ best_param, perform_mat] = CrossValidation1Param...
-    ( X_tr, Y_tr, 'Least_L21', opts, param_range, cv_fold, eval_func_str, higher_better);
+num_repeat = 10;
 
-% disp(perform_mat) % show the performance for each parameter.
-
-% build model using the optimal parameter
-W = Least_L21(X_te, Y_te, best_param, opts);
-
-% show final performance
-[f_mse, f_mts] = eval_MTL_mse(Y_te, X_te, W);
-% fprintf('Performance on test data: %.4f\n', final_performance);
-
-all_rmse(:, tt) = [f_mse; f_mts];
-% all_perf(:, tt) = perform_mat;
-
+% train a separate weight using lasso per task
+for t = 1:num_tasks
+    fprintf('Processing task %i\n', t);
+    t_X = cell2mat(X_tr(t));
+    t_y = cell2mat(Y_tr(t));
+    [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5, 'Lambda', param_range, ...
+    'Standardize', false);
+    % [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5);
+    [~, idx] = min(FitInfo.MSE);
+    W(:,t) = B(:,idx);
 end
+
+[mse, tts] = eval_MTL_mse(Y_te, X_te, W);
+fprintf('Performance on test data: %.4f, %.4f\n', mse, tts);
 
