@@ -41,8 +41,9 @@ function [mse, mts] = eval_MTL_mse (Y, X, W)
 %   Last modified on June 3, 2012.
 %
     task_num = length(X);
-    mse = 0;
-    mts = 0;
+    mse = 0; % mean squared error
+    mts = 0; % mean total squared error
+    % Calculate as R^2 = 1 - mse/mts
 
     total_sample = 0;
     for t = 1: task_num
