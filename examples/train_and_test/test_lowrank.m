@@ -40,6 +40,12 @@ for t = 1: length(X)
     X{t} = [X{t}(:,1:end-1) ones(size(X{t}, 1), 1)]; % add bias.
 end
 
+all_trial = 1;
+all_rmse = zeros(3, all_trial);
+all_perf = zeros(8, all_trial);
+
+for tt = 1:all_trial
+
 % split data into training and testing.
 training_percent = 0.8;
 [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
@@ -62,11 +68,18 @@ fprintf('Perform model selection via cross validation: \n')
 [ best_param, perform_mat] = CrossValidation1Param...
     ( X_tr, Y_tr, 'Least_Trace', opts, param_range, cv_fold, eval_func_str, higher_better);
 
-%disp(perform_mat) % show the performance for each parameter.
+% disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
 W = Least_Trace(X_tr, Y_tr, best_param, opts);
 
 % show final performance
-final_performance = eval_MTL_mse(Y_te, X_te, W);
-fprintf('Performance on test data: %.4f\n', final_performance);
+[f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);
+% fprintf('Performance on test data: %.4f\n', final_performance);
+
+all_rmse(:, tt) = [f_mse; f_rss; f_tss];
+all_perf(:, tt) = perform_mat;
+disp(all_rmse);
+
+end
+

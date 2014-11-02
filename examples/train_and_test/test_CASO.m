@@ -24,7 +24,7 @@
 
 clear; clc;
 
-addpath('../../MALSAR/functions/low_rank/');
+addpath('../../MALSAR/functions/cASO/');
 addpath('../../MALSAR/utils/');
 
 
@@ -39,6 +39,17 @@ for t = 1: length(X)
     X{t} = zscore(X{t});                  % normalization
     X{t} = [X{t}(:,1:end-1) ones(size(X{t}, 1), 1)]; % add bias.
 end
+
+all_trial = 1;
+% model parameter range
+pr1 = [10 0.1 1 100];
+pr2 = [1 10 0.1 100];
+pr3 = [10 100 1000];
+
+all_rmse = zeros(2, all_trial);
+% all_perf = zeros(length(param_range), all_trial);
+
+for tt = 1:all_trial
 
 % split data into training and testing.
 training_percent = 0.8;
@@ -55,18 +66,25 @@ cv_fold = 5;
 opts = [];
 opts.maxIter = 100;
 
-% model parameter range
-param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 
 fprintf('Perform model selection via cross validation: \n')
-[ best_param, perform_mat] = CrossValidation1Param...
-    ( X_tr, Y_tr, 'Least_Trace', opts, param_range, cv_fold, eval_func_str, higher_better);
+% [ best_param, perform_mat] = CrossValidation1Param...
+    % ( X_tr, Y_tr, 'Least_L21', opts, param_range, cv_fold, eval_func_str, higher_better);
 
-%disp(perform_mat) % show the performance for each parameter.
+[ best_param, perform_mat] = CrossValidation3Param...
+    ( X_tr, Y_tr, 'Least_CASO', opts, pr1, pr2, pr3, cv_fold, eval_func_str, higher_better);
+
+% disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = Least_Trace(X_tr, Y_tr, best_param, opts);
+W = Least_CASO(X_tr, Y_tr, best_param(1), best_param(2), best_param(3), opts);
 
 % show final performance
-final_performance = eval_MTL_mse(Y_te, X_te, W);
-fprintf('Performance on test data: %.4f\n', final_performance);
+[f_mse, f_mts] = eval_MTL_mse(Y_te, X_te, W);
+% fprintf('Performance on test data: %.4f\n', final_performance);
+
+all_rmse(:, tt) = [f_mse; f_mts];
+% all_perf(:, tt) = perform_mat;
+
+end
+

@@ -1,5 +1,5 @@
 MALSAR package Version 1.1 (Dec. 18, 2012)
-
+ 
 The Multi-tAsk Learning via StructurAl Regularization (MALSAR) package 
 has covered most of the popular topics such as the regularized multi-task 
 learning, sparse multi-task learning, clustered multi-task learning, 

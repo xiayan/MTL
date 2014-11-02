@@ -24,7 +24,7 @@
 
 clear; clc;
 
-addpath('../../MALSAR/functions/low_rank/');
+addpath('../../MALSAR/functions/Lasso/');
 addpath('../../MALSAR/utils/');
 
 
@@ -37,7 +37,7 @@ Y = load_data.Y;
 % preprocessing data
 for t = 1: length(X)
     X{t} = zscore(X{t});                  % normalization
-    X{t} = [X{t} ones(size(X{t}, 1), 1)]; % add bias.
+    X{t} = [X{t}(:,1:end-1) ones(size(X{t}, 1), 1)]; % add bias.
 end
 
 % split data into training and testing.
@@ -47,22 +47,35 @@ training_percent = 0.8;
 num_tasks = length(X_tr);
 p = size(X_tr{1}, 2);
 W = zeros(p, num_tasks);
+
 param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+% cross validation fold
+cv_fold = 5;
+% optimization options
+opts = [];
+opts.maxIter = 100;
 
 num_repeat = 10;
 
 % train a separate weight using lasso per task
 for t = 1:num_tasks
     fprintf('Processing task %i\n', t);
-    t_X = cell2mat(X_tr(t));
-    t_y = cell2mat(Y_tr(t));
-    [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5, 'Lambda', param_range, ...
-    'Standardize', false);
-    % [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5);
-    [~, idx] = min(FitInfo.MSE);
-    W(:,t) = B(:,idx);
+    % t_X = cell2mat(X_tr(t));
+    % t_y = cell2mat(Y_tr(t));
+    % [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5, 'Lambda', param_range, ...
+    % 'Standardize', false);
+    % [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5); % use default settings
+    % [~, idx] = min(FitInfo.MSE);
+
+    % Use Lasso in the MALSAR package
+    [ best_param, perform_mat] = CrossValidation1Param...
+    ( X_tr(t), Y_tr(t), 'Least_Lasso', opts, param_range, cv_fold, 'eval_MTL_mse', false);
+    % separate weight for each task
+    w = Least_Lasso(X_tr(t), Y_tr(t), best_param, opts);
+
+    W(:,t) = w;
 end
 
-[mse, tts] = eval_MTL_mse(Y_te, X_te, W);
-fprintf('Performance on test data: %.4f, %.4f\n', mse, tts);
+[mse, rss, tss] = eval_MTL_mse(Y_te, X_te, W);
+fprintf('Performance on test data: %.4f, %.4f, %.4f\n', mse, rss, tss);
 
