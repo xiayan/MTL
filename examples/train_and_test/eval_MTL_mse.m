@@ -55,7 +55,7 @@ function [mse, rss, tss] = eval_MTL_mse (Y, X, W)
         total_sample = total_sample + length(y_pred);
     end
     mse = mse./total_sample;
-    rss = rss./task_num;
-    tss = tss./task_num;
+    % rss = rss./task_num;
+    % tss = tss./task_num;
 end
 
