@@ -37,12 +37,12 @@ Y = load_data.Y;
 
 % preprocessing data
 for t = 1: length(X)
-    X{t} = zscore(X{t});                  % normalization
-    X{t} = [X{t} ones(size(X{t}, 1), 1)]; % add bias. 
+	tmp = zscore(X{t}(:, 1:end-1));  % normalize except the bias col
+	X{t} = [tmp ones(size(X{t}, 1), 1)]; % add bias.
 end
 
 % split data into training and testing.
-training_percent = 0.3;
+training_percent = 0.8;
 [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
 
 % the function used for evaluation.
