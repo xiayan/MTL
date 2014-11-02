@@ -1,4 +1,4 @@
-function [mse, mts] = eval_MTL_mse (Y, X, W)
+function [mse, rss, tss] = eval_MTL_mse (Y, X, W)
 %% FUNCTION eval_MTL_mse
 %   computation of mean squared error given a specific model.
 %   the value is the lower the better.
@@ -42,16 +42,20 @@ function [mse, mts] = eval_MTL_mse (Y, X, W)
 %
     task_num = length(X);
     mse = 0; % mean squared error
-    mts = 0; % mean total squared error
+    rss = 0; % total residual
+    tss = 0; % mean total squared error
     % Calculate as R^2 = 1 - mse/mts
 
     total_sample = 0;
     for t = 1: task_num
         y_pred = X{t} * W(:, t);
         mse = mse + sqrt(sum((y_pred - Y{t}).^2)) * length(y_pred);
-        mts = mts + sqrt(sum((mean(Y{t}) - Y{t}).^2)) * length(y_pred);
+        rss = rss + sum((y_pred - Y{t}).^2);
+        tss = tss + sum((mean(Y{t}) - Y{t}).^2);
         total_sample = total_sample + length(y_pred);
     end
     mse = mse./total_sample;
-    mts = mts./total_sample;
+    rss = rss./task_num;
+    tss = tss./task_num;
 end
+

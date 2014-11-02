@@ -83,7 +83,7 @@ for cv_idx = 1: cv_fold
                 W = obj_func(cv_Xtr, cv_Ytr, pr1(p_i1), pr2(p_i2), ...
                 pr3(p_i3), obj_func_opts);
                 perform_mat(p_i1, p_i2, p_i3) = perform_mat(p_i1, p_i2, p_i3) + ...
-                eval_func(Y, X, W);
+                eval_func(cv_Yte, cv_Xte, W);
             end
         end
     end

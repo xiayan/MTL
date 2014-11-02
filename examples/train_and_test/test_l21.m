@@ -37,12 +37,14 @@ Y = load_data.Y;
 % preprocessing data
 for t = 1: length(X)
     X{t} = zscore(X{t});                  % normalization
-    X{t} = [X{t} ones(size(X{t}, 1), 1)]; % add bias.
+    X{t} = [X{t}(:,1:end-1) ones(size(X{t}, 1), 1)]; % add bias.
 end
 
 all_trial = 1;
-all_rmse = zeros(2, all_trial);
-all_perf = zeros(8, all_trial);
+% model parameter range
+param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+all_ss   = zeros(3, all_trial);
+all_perf = zeros(length(param_range), all_trial);
 
 for tt = 1:all_trial
 
@@ -61,8 +63,6 @@ cv_fold = 5;
 opts = [];
 opts.maxIter = 100;
 
-% model parameter range
-param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 
 fprintf('Perform model selection via cross validation: \n')
 [ best_param, perform_mat] = CrossValidation1Param...
@@ -71,14 +71,15 @@ fprintf('Perform model selection via cross validation: \n')
 % disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = Least_L21(X_te, Y_te, best_param, opts);
+W = Least_L21(X_tr, Y_tr, best_param, opts);
 
 % show final performance
-[f_mse, f_mts] = eval_MTL_mse(Y_te, X_te, W);
+[f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);
 % fprintf('Performance on test data: %.4f\n', final_performance);
 
-all_rmse(:, tt) = [f_mse; f_mts];
-% all_perf(:, tt) = perform_mat;
+all_ss(:, tt) = [f_mse; f_rss; f_tss];
+all_perf(:, tt) = perform_mat;
+disp(all_ss);
 
 end
 

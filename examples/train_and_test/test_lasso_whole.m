@@ -52,6 +52,7 @@ t_X = cell2mat(X_tr');
 t_y = cell2mat(Y_tr');
 [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5, 'Lambda', param_range, ...
 'Standardize', false);
+lassoPlot(B,FitInfo,'PlotType','CV');
 % [B, FitInfo] = lasso(t_X, t_y, 'Alpha', 1, 'CV', 5);
 [~, idx] = min(FitInfo.MSE);
 w = B(:,idx);
