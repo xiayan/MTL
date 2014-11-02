@@ -78,6 +78,6 @@ all_y_te = {cat(1, Y_te{:})};
 [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
 
 % The TSS here is calculated different than other MTL methods.
-% Use the MTL version of TSS to calculate R^2.
+% Use the MTL version of TSS to calculate R^2, which is around 4.4e5
 fprintf('Performance on test data: %.4f, %.4f, %.4f\n', mse, rss, tss);
 

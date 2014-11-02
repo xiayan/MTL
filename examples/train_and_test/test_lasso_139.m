@@ -70,6 +70,7 @@ for t = 1:num_tasks
     % Use Lasso in the MALSAR package
     [ best_param, perform_mat] = CrossValidation1Param...
     ( X_tr(t), Y_tr(t), 'Least_Lasso', opts, param_range, cv_fold, 'eval_MTL_mse', false);
+    % separate weight for each task
     w = Least_Lasso(X_tr(t), Y_tr(t), best_param, opts);
 
     W(:,t) = w;
