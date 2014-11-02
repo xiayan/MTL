@@ -24,7 +24,7 @@
 
 clear; clc;
 
-addpath('../../MALSAR/functions/cASO/');
+addpath('../../MALSAR/functions/msmtfl/');
 addpath('../../MALSAR/utils/');
 
 
@@ -42,9 +42,8 @@ end
 
 all_trial = 1;
 % model parameter range
-pr1 = [1 10 100 1000];
-pr2 = [0.1 1 10 100];
-pr3 = [5 50 500];
+pr1 = [0.1 1 10 100];
+pr2 = [1 10 100 1000];
 
 all_rmse = zeros(3, all_trial);
 % all_perf = zeros(length(param_range), all_trial);
@@ -68,13 +67,13 @@ opts.maxIter = 100;
 
 
 fprintf('Perform model selection via cross validation: \n')
-[ best_param, perform_mat] = CrossValidation3Param...
-    ( X_tr, Y_tr, 'Least_CASO', opts, pr1, pr2, pr3, cv_fold, eval_func_str, higher_better);
+[ best_param, perform_mat] = CrossValidation2Param...
+    ( X_tr, Y_tr, 'Least_msmtfl_capL1', opts, pr1, pr2, cv_fold, eval_func_str, higher_better);
 
 % disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = Least_CASO(X_tr, Y_tr, best_param(1), best_param(2), best_param(3), opts);
+W = Least_msmtfl_capL1(X_tr, Y_tr, best_param(1), best_param(2), opts);
 
 % show final performance
 [f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);

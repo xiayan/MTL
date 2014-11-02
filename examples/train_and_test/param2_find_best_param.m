@@ -1,4 +1,4 @@
-%% SCRIPT test_script.m 
+%% SCRIPT test_script.m
 function [best_param, perform_mat] = param2_find_best_param(func_obj_str)
 
 addpath(genpath('../../MALSAR/'));
@@ -40,3 +40,4 @@ fprintf('Perform model selection via cross validation: \n')
     ( X_tr, Y_tr, func_obj_str, opts, param1_range, param2_range, cv_fold, eval_func_str, higher_better);
 
 end
+
