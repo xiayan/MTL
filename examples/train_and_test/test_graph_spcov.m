@@ -28,8 +28,8 @@ clc;
 close;
 
 addpath('../../MALSAR/functions/Lasso/'); % load function
-addpath('../../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
-addpath('../../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
+addpath('../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
+addpath('../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
 addpath('../../MALSAR/functions/SRMTL/'); % load function
 addpath('../../MALSAR/utils/'); % load utilities
 
