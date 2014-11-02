@@ -27,11 +27,11 @@ clear;
 clc;
 close;
 
-addpath('../MALSAR/functions/Lasso/'); % load function
-addpath('../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
-addpath('../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
-addpath('../MALSAR/functions/SRMTL/'); % load function
-addpath('../MALSAR/utils/'); % load utilities
+addpath('../../MALSAR/functions/Lasso/'); % load function
+addpath('../../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
+addpath('../../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
+addpath('../../MALSAR/functions/SRMTL/'); % load function
+addpath('../../MALSAR/utils/'); % load utilities
 
 %rng('default');     % reset random generator. Available from Matlab 2011.
 opts.init = 0;      % guess start point from data. 
@@ -39,7 +39,7 @@ opts.tFlag = 1;     % terminate after relative objective value does not changes 
 opts.tol = 10^-5;   % tolerance. 
 opts.maxIter = 500; % maximum iteration number of optimization.
 
-load('../data/school.mat'); % load sample data.
+load('../../data/school.mat'); % load sample data.
 task_num = length(X);
 
 % use Lasso calculate a model (used for graph analysis)
@@ -104,7 +104,7 @@ all_trial = 10;
 all_rmse = zeros(3, all_trial);
 all_perf = zeros(8, all_trial);
 
-for tt = 1:all_trial
+parfor tt = 1:all_trial
 
 % split data into training and testing.
 training_percent = 0.8;
@@ -143,4 +143,5 @@ all_rmse(:, tt) = [f_mse, f_rss, f_tss];
 % all_perf(:, tt) = perform_mat;
 
 end
-
+%%
+save('tmp_graph_sp_invcov.mat')

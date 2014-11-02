@@ -98,7 +98,7 @@ all_trial = 10;
 all_rmse = zeros(3, all_trial);
 all_perf = zeros(8, all_trial);
 
-for tt = 1:all_trial
+parfor tt = 1:all_trial
 
 % split data into training and testing.
 training_percent = 0.8;
