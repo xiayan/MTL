@@ -27,40 +27,46 @@ clear;
 clc;
 close;
 
-addpath('../../MALSAR/functions/Lasso/'); % load function
-addpath('../../MALSAR/functions/SRMTL/'); % load function
-addpath('../../MALSAR/utils/'); % load utilities
+addpath('../MALSAR/functions/Lasso/'); % load function
+addpath('../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
+addpath('../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
+addpath('../MALSAR/functions/SRMTL/'); % load function
+addpath('../MALSAR/utils/'); % load utilities
 
-%rng('default');     % reset random generator.Available from Matlab 2011.
+%rng('default');     % reset random generator. Available from Matlab 2011.
 opts.init = 0;      % guess start point from data. 
 opts.tFlag = 1;     % terminate after relative objective value does not changes much.
 opts.tol = 10^-5;   % tolerance. 
 opts.maxIter = 500; % maximum iteration number of optimization.
 
-load('../../data/school.mat'); % load sample data.
+load('../data/school.mat'); % load sample data.
 task_num = length(X);
+
 % use Lasso calculate a model (used for graph analysis)
 [W_pre] = Least_Lasso(X, Y, 0.01, opts);
+
 % normalize matrix.
 mean_1=mean(W_pre,1);
 W_pre=W_pre-repmat(mean_1,size(W_pre, 1),1);
 norm_2=sqrt( sum(W_pre.^2,1) );
 W_pre=W_pre./repmat(norm_2,size(W_pre, 1),1);
-% use model correlation to calculate a graph
-correlation_threshold = 0.85;
-graph = corrcoef(W_pre)>correlation_threshold;
+
+
+
+% use sparse inverse covariance to calculate a graph
+S=W_pre'*W_pre; % empirical covariance matrix 
+sinv_opts.maxIter=100;
+sinv_opts.lambda=0.1;
+Theta=sparseInverseCovariance(S, sinv_opts.lambda, sinv_opts);
+
+graph = Theta~=0;
 graph = graph - eye(task_num);
 edge_num = nnz(graph)/2;
 fprintf('%u edges are found\n', edge_num);
 
 imshow(1- graph, 'InitialMagnification', 'fit')
-title(sprintf('Correlation Graph with Threshold %.2f (#edge = %u)', correlation_threshold, edge_num));
-print('-dpdf', '-r300', 'LeastSRMTLExp_1');
-
-imshow(1- corrcoef(W_pre), 'InitialMagnification', 'fit')
-title('Pairwise Correlation for School Data');
-colormap(autumn)
-print('-dpdf', '-r300', 'LeastSRMTLExp_2');
+title(sprintf('Sparse Inverse Covariance Graph (lambda=%.2f, #edge = %u)', sinv_opts.lambda, edge_num));
+print('-dpdf', '-r300', 'LeastSRMTLExp_spinv_1');
 
 % construct graph structure variable.
 R = [];
