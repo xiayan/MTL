@@ -37,7 +37,7 @@ Y = load_data.Y;
 % preprocessing data
 for t = 1: length(X)
     X{t} = zscore(X{t});                  % normalization
-    X{t} = [X{t} ones(size(X{t}, 1), 1)]; % add bias.
+    X{t} = [X{t}(:, 1:end-1) ones(size(X{t}, 1), 1)]; % add bias.
 end
 
 all_trial = 1;

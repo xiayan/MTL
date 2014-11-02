@@ -46,18 +46,17 @@ training_percent = 0.8;
 
 num_tasks = length(X_tr);
 p = size(X_tr{1}, 2);
-W = zeros(p, num_tasks);
+t_params = zeros(1, num_tasks);
 
-param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 % cross validation fold
 cv_fold = 5;
 % optimization options
 opts = [];
 opts.maxIter = 100;
-
-num_repeat = 10;
+param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 
 % train a separate weight using lasso per task
+% CrossValidation1Param
 for t = 1:num_tasks
     fprintf('Processing task %i\n', t);
     % t_X = cell2mat(X_tr(t));
@@ -68,14 +67,31 @@ for t = 1:num_tasks
     % [~, idx] = min(FitInfo.MSE);
 
     % Use Lasso in the MALSAR package
-    [ best_param, perform_mat] = CrossValidation1Param...
+    [ best_param, perform_mat ] = CrossValidation1Param...
     ( X_tr(t), Y_tr(t), 'Least_Lasso', opts, param_range, cv_fold, 'eval_MTL_mse', false);
-    % separate weight for each task
-    w = Least_Lasso(X_tr(t), Y_tr(t), best_param, opts);
-
-    W(:,t) = w;
+    t_params(1, t) = best_param;
 end
 
-[mse, rss, tss] = eval_MTL_mse(Y_te, X_te, W);
-fprintf('Performance on test data: %.4f, %.4f, %.4f\n', mse, rss, tss);
+% testing for num_repeat times
+num_repeat = 50;
+Errors = [num_repeat, 4];
+for r = 1:num_repeat
+    fprintf('Repate %i\n', r);
+    % split data into training and testing.
+    training_percent = 0.8;
+    [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
+    W = zeros(p, num_tasks);
+
+    % Training
+    for t = 1:num_tasks
+        w = Least_Lasso(X_tr(t), Y_tr(t), t_params(1,t), opts);
+        W(:,t) = w;
+    end
+
+    % Testing
+    [mse, rss, tss] = eval_MTL_mse(Y_te, X_te, W);
+    Errors(r, 1:3) = [mse, rss, tss];
+end
+
+Errors(:,4) = 1 - ( Errors(:, 2) ./ Errors(:, 3) );
 

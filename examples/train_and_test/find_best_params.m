@@ -1,8 +1,8 @@
 function [best_param, perform_mat] = find_best_params(func_obj_str, num_params)
 % find the best parameter using cross validation
-% for methods contain 2 or 3 parameters
+% for methods contain 1, 2 or 3 parameters
 
-if num_params ~= 2 && num_params ~= 3
+if num_params ~= 1 && num_params ~= 2 && num_params ~= 3
     error('\n Cannot use this function. See the first line of comment \n');
 end
 
@@ -37,15 +37,18 @@ opts = [];
 opts.maxIter = 100;
 
 % model parameter range
-% param1_range = [0.001 0.01 0.1 1 10 100 1000 10000];
-% param2_range = [0.001 0.01 0.1 1 10 100 1000 10000];
-% param3_range = [0.001 0.01 0.1 1 10 100 1000 10000];
-param1_range = [1 10 100];
-param2_range = [1 10 100];
-param3_range = [1 10 100];
+param1_range = [0.001 0.005 0.01 0.05 0.1 0.5 1 5 10 50 100 500 1000 5000 10000];
+param2_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+param3_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+% param1_range = [1 10 100];
+% param2_range = [1 10 100];
+% param3_range = [1 10 100];
 
 fprintf('Perform model selection via cross validation: \n')
-if num_params == 2
+if num_params == 1
+    [ best_param, perform_mat ] = CrossValidation1Param...
+    ( X_tr, Y_tr, func_obj_str, opts, param1_range, cv_fold, eval_func_str, higher_better);
+elseif num_params == 2
     [ best_param, perform_mat] = CrossValidation2Param...
     ( X_tr, Y_tr, func_obj_str, opts, param1_range, param2_range, cv_fold, eval_func_str, higher_better);
 elseif num_params == 3

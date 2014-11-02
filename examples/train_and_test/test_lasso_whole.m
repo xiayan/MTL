@@ -51,8 +51,6 @@ cv_fold = 5;
 opts = [];
 opts.maxIter = 100;
 
-num_repeat = 10;
-
 % train a single model using all samples
 % t_X = cell2mat(X_tr');
 % t_y = cell2mat(Y_tr');
@@ -67,17 +65,29 @@ num_repeat = 10;
 % W = repmat(w, 1, num_tasks);
 
 % train a single model using package Lasso
+
+% cross validation
 all_X_tr = {cat(1, X_tr{:})};
 all_y_tr = {cat(1, Y_tr{:})};
 [ best_param, perform_mat] = CrossValidation1Param...
 ( all_X_tr, all_y_tr, 'Least_Lasso', opts, param_range, cv_fold, 'eval_MTL_mse', false);
-w = Least_Lasso(all_X_tr, all_y_tr, best_param, opts);
 
-all_X_te = {cat(1, X_te{:})};
-all_y_te = {cat(1, Y_te{:})};
-[mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
+num_repeat = 50;
+Errors = zeros(num_repeat, 4);
+
+for r = 1:num_repeat
+    fprintf('Testing round %i\n', r);
+    % split data
+    [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
+    w = Least_Lasso(all_X_tr, all_y_tr, best_param, opts);
+
+    all_X_te = {cat(1, X_te{:})};
+    all_y_te = {cat(1, Y_te{:})};
+    [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
+    Errors(r, 1:3) = [mse, rss, tss];
+end
+
 
 % The TSS here is calculated different than other MTL methods.
 % Use the MTL version of TSS to calculate R^2, which is around 4.4e5
-fprintf('Performance on test data: %.4f, %.4f, %.4f\n', mse, rss, tss);
 
