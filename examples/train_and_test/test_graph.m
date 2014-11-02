@@ -95,7 +95,7 @@ for t = 1: length(X)
 end
 
 all_trial = 10;
-all_rmse = zeros(2, all_trial);
+all_rmse = zeros(3, all_trial);
 all_perf = zeros(8, all_trial);
 
 for tt = 1:all_trial
@@ -130,10 +130,10 @@ fprintf('Perform model selection via cross validation: \n')
 W = Least_SRMTL(X_tr, Y_tr, R, best_param(1), best_param(2), opts);
 
 % show final performance
-[f_mse, f_mts] = eval_MTL_mse(Y_te, X_te, W);
+[f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);
 % fprintf('Performance on test data: %.4f\n', final_performance);
 
-all_rmse(:, tt) = [f_mse; f_mts];
+all_rmse(:, tt) = [f_mse, f_rss, f_tss];
 % all_perf(:, tt) = perform_mat;
 
 end
