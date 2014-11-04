@@ -28,7 +28,8 @@ training_percent = 0.8;
 
 % optimization options
 opts = [];
-opts.maxIter = 100;
+opts.maxIter = 10000;
+opts.init = 0;
 
 mse_s = zeros(repetition, 1);
 tss_s = zeros(repetition, 1);

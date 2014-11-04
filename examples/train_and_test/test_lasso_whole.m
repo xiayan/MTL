@@ -83,8 +83,23 @@ for r = 1:num_repeat
 
     all_X_te = {cat(1, X_te{:})};
     all_y_te = {cat(1, Y_te{:})};
-    [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
-    Errors(r, 1:3) = [mse, rss, tss];
+    % [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
+
+    task_num = length(X);
+    rss = 0; % total residual
+    tss = 0; % mean total squared error
+    % Calculate as R^2 = 1 - mse/mts
+
+    y_pred = all_X_te{1} * w;
+    mse = sqrt(sum((y_pred - all_y_te{1}).^2));
+
+    for t = 1:length(Y_te)
+        y_pred = X_te{t} * w;
+        rss = rss + sum((y_pred - Y_te{t}).^2);
+        tss = tss + sum((mean(Y{t}) - Y_te{t}).^2);
+    end
+
+    Errors(r, :) = [mse, rss, tss, 1 - rss/tss];
 end
 
 
