@@ -98,7 +98,7 @@ all_trial = 10;
 all_rmse = zeros(3, all_trial);
 all_perf = zeros(8, all_trial);
 
-parfor tt = 1:all_trial
+for tt = 1:all_trial
 
 % split data into training and testing.
 training_percent = 0.8;
@@ -137,4 +137,12 @@ all_rmse(:, tt) = [f_mse, f_rss, f_tss];
 % all_perf(:, tt) = perform_mat;
 
 end
+%%
+Errors = zeros(all_trial, 4);
+Errors(:,1:3) = all_rmse';
+Errors(:,4) = 1 - ( Errors(:, 2) ./ Errors(:, 3) );
 
+save('results/Graph/Graph_Errors.mat','Errors');
+save('results/Graph/Graph_Best.mat','best_param');
+save('results/Graph/Graph_perf.mat','perform_mat');
+save('results/Graph/Graph_W.mat','W');

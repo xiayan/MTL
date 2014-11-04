@@ -20,11 +20,11 @@
 %   Copyright (C) 2011 - 2012 Jiayu Zhou and Jieping Ye
 %
 %% Related functions
-%   mtSplitPerc, CrossValidation3Param, Least_CMTL
+%   mtSplitPerc, CrossValidation1Param, Least_Trace
 
 clear; clc;
 
-addpath('../../MALSAR/functions/CMTL/');
+addpath('../../MALSAR/functions/iMSF/');
 addpath('../../MALSAR/utils/');
 
 
@@ -41,13 +41,8 @@ for t = 1: length(X)
 end
 
 all_trial = 10;
-% model parameter range
-pr1 = [0.1 1 10 100];
-pr2 = [0.1 1 10 100];
-pr3 = [2 5];
-
 all_rmse = zeros(3, all_trial);
-% all_perf = zeros(length(param_range), all_trial);
+all_perf = zeros(8, all_trial);
 
 for tt = 1:all_trial
 
@@ -66,15 +61,19 @@ cv_fold = 5;
 opts = [];
 opts.maxIter = 100;
 
+% model parameter range
+param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+
+ff = @(X_Set, Y, lambda, opts) Least_iMSF(multi_transpose(X_Set), Y, lambda, opts);
 
 fprintf('Perform model selection via cross validation: \n')
-[ best_param, perform_mat] = CrossValidation3Param...
-    ( X_tr, Y_tr, 'Least_CMTL', opts, pr1, pr2, pr3, cv_fold, eval_func_str, higher_better);
+[ best_param, perform_mat] = CrossValidation1Param...
+    ( X_tr, Y_tr, func2str(ff), opts, param_range, cv_fold, eval_func_str, higher_better);
 
 % disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = Least_CMTL(X_tr, Y_tr, best_param(1), best_param(2), best_param(3), opts);
+W = ff(X_tr, Y_tr, best_param, opts);
 
 % show final performance
 [f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);
@@ -83,8 +82,9 @@ W = Least_CMTL(X_tr, Y_tr, best_param(1), best_param(2), best_param(3), opts);
 all_rmse(:, tt) = [f_mse; f_rss; f_tss];
 %all_perf(:, tt) = perform_mat;
 
+
 end
-%%
+
 Errors = zeros(all_trial, 4);
 Errors(:,1:3) = all_rmse';
 Errors(:,4) = 1 - ( Errors(:, 2) ./ Errors(:, 3) );

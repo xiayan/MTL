@@ -20,71 +20,24 @@
 %   Copyright (C) 2011 - 2012 Jiayu Zhou and Jieping Ye
 %
 %% Related functions
-%   mtSplitPerc, CrossValidation1Param_withR, Least_Trace
+%   mtSplitPerc, CrossValidation1Param_withR, Least_MR
 
-%construct graph R
 clear;
 clc;
 close;
 
-addpath('../../MALSAR/functions/Lasso/'); % load function
-addpath('../../SLEP_4.0/SLEP/functions/invCov/'); %load sparse inverse covariance from SLEP
-addpath('../../SLEP_4.0/SLEP/cFiles/spInvCoVa/');
-addpath('../../MALSAR/functions/SRMTL/'); % load function
-addpath('../../MALSAR/utils/'); % load utilities
-
-%rng('default');     % reset random generator. Available from Matlab 2011.
-opts.init = 0;      % guess start point from data. 
-opts.tFlag = 1;     % terminate after relative objective value does not changes much.
-opts.tol = 10^-5;   % tolerance. 
-opts.maxIter = 500; % maximum iteration number of optimization.
-
-load('../../data/school.mat'); % load sample data.
-task_num = length(X);
-
-% use Lasso calculate a model (used for graph analysis)
-[W_pre] = Least_Lasso(X, Y, 0.01, opts);
-
-% normalize matrix.
-mean_1=mean(W_pre,1);
-W_pre=W_pre-repmat(mean_1,size(W_pre, 1),1);
-norm_2=sqrt( sum(W_pre.^2,1) );
-W_pre=W_pre./repmat(norm_2,size(W_pre, 1),1);
-
-
-
-% use sparse inverse covariance to calculate a graph
-S=W_pre'*W_pre; % empirical covariance matrix 
-sinv_opts.maxIter=100;
-sinv_opts.lambda=0.1;
-Theta=sparseInverseCovariance(S, sinv_opts.lambda, sinv_opts);
-
-graph = Theta~=0;
-graph = graph - eye(task_num);
-edge_num = nnz(graph)/2;
-fprintf('%u edges are found\n', edge_num);
-
-imshow(1- graph, 'InitialMagnification', 'fit')
-title(sprintf('Sparse Inverse Covariance Graph (lambda=%.2f, #edge = %u)', sinv_opts.lambda, edge_num));
-print('-dpdf', '-r300', 'LeastSRMTLExp_spinv_1');
+%   special case for Sparse Structure-Regularized Learning with Least
+%   Squares Loss when rho2 = 0, R = I-1/T*ones;
 
 % construct graph structure variable.
-R = [];
-for i = 1: task_num
-    for j = i + 1: task_num
-        if graph (i, j) ~=0
-            edge = zeros(task_num, 1);
-            edge(i) = 1;
-            edge(j) = -1;
-            R = cat(2, R, edge);
-        end
-    end
-end
+
+
+
 
 %%
 
 
-addpath('../../MALSAR/functions/joint_feature_learning/');
+addpath('../../MALSAR/functions/mean_regularized/');
 addpath('../../MALSAR/utils/');
 
 
@@ -93,6 +46,9 @@ load_data = load('../../data/school.mat');
 
 X = load_data.X;
 Y = load_data.Y;
+
+I = eye(size(X,2));
+R = I - 1/size(X,2).*ones(size(X,2),size(X,2));
 
 % preprocessing data
 for t = 1: length(X)
@@ -124,16 +80,16 @@ opts.maxIter = 100;
 % model parameter range
 param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 
-ff=@(x,y,rho1,rho2,opts)Least_SRMTL(x,y,R,rho1,rho2,opts);
+ff=@(x,y,rho1,rho2,opts)Least_MR(x,y,R,rho1,rho2,opts);
 
 fprintf('Perform model selection via cross validation: \n')
 [ best_param, perform_mat] = CrossValidation2Param_withR...
-    ( X_tr, Y_tr, ff, opts, param_range,param_range, cv_fold, eval_func_str, higher_better);
+    ( X_tr, Y_tr, ff, opts, param_range, 0, cv_fold, eval_func_str, higher_better);
 
 % disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = Least_SRMTL(X_tr, Y_tr, R, best_param(1), best_param(2), opts);
+W = Least_MR(X_tr, Y_tr, R, best_param(1), 0, opts);
 
 % show final performance
 [f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);
@@ -144,12 +100,11 @@ all_rmse(:, tt) = [f_mse, f_rss, f_tss];
 
 end
 %%
-
 Errors = zeros(all_trial, 4);
 Errors(:,1:3) = all_rmse';
 Errors(:,4) = 1 - ( Errors(:, 2) ./ Errors(:, 3) );
 
-save('results/Graph/Graph_spcov_Errors.mat','Errors');
-save('results/Graph/Graph_spcov_Best.mat','best_param');
-save('results/Graph/Graph_spcov_perf.mat','perform_mat');
-save('results/Graph/Graph_spcov_W.mat','W');
+save('results/MR/MR_Errors.mat','Errors');
+save('results/MR/MR_Best.mat','best_param');
+save('results/MR/MR_perf.mat','perform_mat');
+save('results/MR/MR_W.mat','W');
