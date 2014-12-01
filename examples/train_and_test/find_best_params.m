@@ -34,7 +34,8 @@ cv_fold = 5;
 
 % optimization options
 opts = [];
-opts.maxIter = 100;
+opts.maxIter = 10000;
+opts.init = 0;
 
 % model parameter range
 % param1_range = [0.001 0.005 0.01 0.05 0.1 0.5 1 5 10 50 100 500 1000 5000 10000];

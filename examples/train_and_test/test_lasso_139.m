@@ -54,6 +54,7 @@ cv_fold = 5;
 opts = [];
 opts.maxIter = 100;
 param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
+% param_range = [0.001 0.005 0.01 0.05  0.1 0.5 1 5 10 50 100 500 1000 5000 10000];
 
 % train a separate weight using lasso per task
 % CrossValidation1Param
