@@ -61,7 +61,7 @@ opts = [];
 opts.maxIter = 100;
 
 % model parameter range
-param_range = [0.01 0.1 1 10 100 1000];
+param_range = [20 50 100 200 500 1000 2000 5000 10000];
 
 
 fprintf('Perform model selection via cross validation: \n')

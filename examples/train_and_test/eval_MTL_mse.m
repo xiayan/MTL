@@ -50,6 +50,8 @@ function [mse, rss, tss] = eval_MTL_mse (Y, X, W)
     for t = 1: task_num
         y_pred = X{t} * W(:, t);
         mse = mse + sqrt(sum((y_pred - Y{t}).^2)) * length(y_pred);
+%        mse = mse + sqrt(sum((y_pred - Y{t}).^2)/length(y_pred)) * length(y_pred);
+
         rss = rss + sum((y_pred - Y{t}).^2);
         tss = tss + sum((mean(Y{t}) - Y{t}).^2);
         total_sample = total_sample + length(y_pred);

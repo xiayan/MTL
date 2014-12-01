@@ -75,15 +75,20 @@ all_y_tr = {cat(1, Y_tr{:})};
 num_repeat = 50;
 Errors = zeros(num_repeat, 4);
 
+
+
 for r = 1:num_repeat
     fprintf('Testing round %i\n', r);
     % split data
     [X_tr, Y_tr, X_te, Y_te] = mtSplitPerc(X, Y, training_percent);
+    all_X_tr = {cat(1, X_tr{:})};
+    all_y_tr = {cat(1, Y_tr{:})};
     w = Least_Lasso(all_X_tr, all_y_tr, best_param, opts);
-
-    all_X_te = {cat(1, X_te{:})};
-    all_y_te = {cat(1, Y_te{:})};
-    [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, w);
+    W = repmat (w, 1, length(Y));
+%    all_X_te = {cat(1, X_te{:})};
+%    all_y_te = {cat(1, Y_te{:})};
+%    [mse, rss, tss] = eval_MTL_mse(all_y_te, all_X_te, W);
+    [mse, rss, tss] = eval_MTL_mse(Y_te, X_te, W);
     Errors(r, 1:3) = [mse, rss, tss];
 end
 
