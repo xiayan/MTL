@@ -31,6 +31,8 @@ close;
 
 % construct graph structure variable.
 
+addpath('../../MALSAR/functions/Tree_based/');
+addpath('../../MALSAR/utils/');
 
 
 %%
