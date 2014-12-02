@@ -34,6 +34,10 @@ close;
 addpath('../../MALSAR/functions/Tree_based/');
 addpath('../../MALSAR/utils/');
 
+% load data
+load_data = load('../../data/school.mat');
+X = load_data.X;
+Y = load_data.Y;
 
 %%
 
@@ -68,7 +72,12 @@ opts.maxIter = 100;
 param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
 alpha_range = [0 0.25 0.5 0.75 1];
 
-ff=@(x,y,rho1,rho2,rho3,alpha)SolveTreeBased_ElasticNet(x,y,Cluster,rho1,rho2,rho3,alpha);
+
+Clusters = randperm(length(X))';
+Clusters = mod(Clusters,3)+1;
+
+
+ff=@(x,y,rho1,rho2,rho3,alpha,opts)SolveTreeBased_ElasticNet(x,y,Clusters,rho1,rho2,rho3,alpha);
 
 fprintf('Perform model selection via cross validation: \n')
 [ best_param, perform_mat] = CrossValidation4Param_alpha...
@@ -77,7 +86,7 @@ fprintf('Perform model selection via cross validation: \n')
 % disp(perform_mat) % show the performance for each parameter.
 
 % build model using the optimal parameter
-W = SolveTreeBased_ElasticNet(X_tr, Y_tr, Cluster, best_param(1), best_param(2), best_param(3), best_param(4));
+W = SolveTreeBased_ElasticNet(X_tr, Y_tr, Clusters, best_param(1), best_param(2), best_param(3), best_param(4));
 
 % show final performance
 [f_mse, f_rss, f_tss] = eval_MTL_mse(Y_te, X_te, W);

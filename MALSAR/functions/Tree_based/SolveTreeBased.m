@@ -1,4 +1,4 @@
-function [ W,Theta ] = SolveTreeBased( X,Y, cluster,lambda1, lambda2, lambda3 )
+function [ W,Theta ] = SolveTreeBased( X,Y, cluster,lambda1, lambda2, lambda3)
 %SOLVETREEBASED Summary 
 
 % clusters is a column vector indicating which task is assigned to which cluster

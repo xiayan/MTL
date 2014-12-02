@@ -1,5 +1,5 @@
-function [ best_param, perform_mat] = CrossValidation4Param_alpha...
-    ( X, Y, obj_func_str, obj_func_opts, pr1, pr2, pr3, alpha, cv_fold, eval_func_str, higher_better)
+function [ best_param, perform_mat] = CrossValidation3Param...
+    ( X, Y, obj_func_str, obj_func_opts, pr1, pr2, pr3, cv_fold, eval_func_str, higher_better)
 %% Function CROSSVALIDATION1PARAM
 %   Model selection (cross validation) for 1 parameter
 %       multi-task learning functions
@@ -53,7 +53,7 @@ task_num = length(X);
 
 % performance vector
 % perform_mat = zeros(length(param_range),1);
-perform_mat = zeros(length(pr1), length(pr2), length(pr3), length(alpha));
+perform_mat = zeros(length(pr1), length(pr2), length(pr3));
 
 % begin cross validation
 fprintf('[')
@@ -80,12 +80,10 @@ for cv_idx = 1: cv_fold
     for p_i1 = 1: length(pr1)
         for p_i2 = 1: length(pr2)
             for p_i3 = 1: length(pr3)
-                for p_i4 = 1: length(alpha)
-                    W = obj_func(cv_Xtr, cv_Ytr, pr1(p_i1), pr2(p_i2), ...
-                    pr3(p_i3), alpha(p_i4), obj_func_opts);
-                    perform_mat(p_i1, p_i2, p_i3, p_i4) = perform_mat(p_i1, p_i2, p_i3, p_i4) + ...
-                    eval_func(cv_Yte, cv_Xte, W);
-                end
+                W = obj_func(cv_Xtr, cv_Ytr, pr1(p_i1), pr2(p_i2), ...
+                pr3(p_i3), obj_func_opts);
+                perform_mat(p_i1, p_i2, p_i3) = perform_mat(p_i1, p_i2, p_i3) + ...
+                eval_func(cv_Yte, cv_Xte, W);
             end
         end
     end
@@ -95,13 +93,13 @@ fprintf(']\n')
 
 if( higher_better)
     [~,best_idx] = max(perform_mat(:));
-    [b1, b2, b3, b4] = ind2sub(size(perform_mat), best_idx);
+    [b1, b2, b3] = ind2sub(size(perform_mat), best_idx);
 else
     [~,best_idx] = min(perform_mat(:));
-    [b1, b2, b3, b4] = ind2sub(size(perform_mat), best_idx);
+    [b1, b2, b3] = ind2sub(size(perform_mat), best_idx);
 end
 
-best_param = [pr1(b1), pr2(b2), pr3(b3), alpha(b4)];
+best_param = [pr1(b1), pr2(b2), pr3(b3)];
 
 end
 
