@@ -27,6 +27,9 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     TH.X = THX;
     TH.Y = THY;
 
+    % parfor related
+    parpool;
+
     for i = 1:Iterations
         fprintf('Iteration: %d/%d\n', i, Iterations);
         order = randperm(num_tasks); % generate a random order for tree proposal
@@ -44,7 +47,7 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
             [trainX, trainY, holdX, holdY] = splitDataset(TH, 0.8);
 
             % cur_W: feature * task * proposal
-            cur_W = trainTrees(S, trainX, trainY);
+            cur_W = parTrainTrees(S, trainX, trainY);
             % cur_P: proposal * 1
             cur_P = testTrees(cur_W, holdX, holdY);
             [min_p, min_idx] = min(cur_P);
@@ -75,6 +78,9 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     final_W = trainTrees(s, THX, THY);
     final_p = testTrees(final_W, testX, testY);
 
+    % parfor related
+    delete(gcp);
+
 end
 
 
@@ -100,7 +106,6 @@ function S = treeProposals(s, cur_task)
     % assign the cur_task to each of existing parents
     for i = 1:length(parents)
         if parents(i) ~= s(cur_task)
-            fprintf('parent:%d, cur_task:%d\n', parents(i), s(cur_task));
             cur_s = s;
             cur_s(cur_task) = parents(i);
             S(:, c) = cur_s;
@@ -141,6 +146,27 @@ function W = trainTrees(S, X, Y)
 end
 
 
+%% parTrainTrees
+function W = parTrainTrees(S, X, Y)
+    % add the path to optimization functions
+    addpath('../../MALSAR/functions/Tree_based/');
+
+    % W: feature * task * proposal
+    num_feats = size(X{1}, 2);
+    num_tasks = length(X);
+    num_pps   = size(S, 2);
+    W = zeros(num_feats, num_tasks, num_pps);
+
+    parfor i = 1:num_pps
+        s = S(:, i);
+        cur_W = Su_Optimization(X, Y, s);
+
+        W(:, :, i) = cur_W;
+    end
+
+end
+
+
 %% Su_Optimization
 function W = Su_Optimization(X, Y, s)
     addpath('../train_and_test/');
@@ -158,7 +184,7 @@ function W = Su_Optimization(X, Y, s)
     % model parameter range
     % param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
     % alpha_range = [0 0.25 0.5 0.75 1];
-    param_range = [1, 100000];
+    param_range = [1, 1000000];
     % alpha_range = [0.25, 0.75];
     alpha_range = 1;
 
