@@ -16,7 +16,7 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
     all_s     = zeros(num_tasks, all_trial);
     all_W     = zeros(num_feats, num_tasks, all_trial);
 
-    parpool;
+    parpool('local');
 
     for tt = 1:all_trial
         % split data into training and testing.
