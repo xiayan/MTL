@@ -71,7 +71,7 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
         end
 
         % terminate if the s vector does not change
-        % s = reorder(s);
+        s = reorder(s);
         disp(s);
         if isequal(last_s, s)
             break
@@ -79,6 +79,8 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     end
 
     % train the whole data again using the converged s vector.
+    fprintf('Final tree is\n');
+    disp(s);
     final_W = trainTrees(s, THX, THY);
     final_p = testTrees(final_W, testX, testY);
 
@@ -112,7 +114,8 @@ function S = treeProposals(s, cur_task)
         if parents(i) ~= s(cur_task)
             cur_s = s;
             cur_s(cur_task) = parents(i);
-            S(:, c) = reorder(cur_s);
+            % S(:, c) = reorder(cur_s);
+            S(:, c) = cur_s;
             c = c + 1;
         end
     end
@@ -120,7 +123,8 @@ function S = treeProposals(s, cur_task)
     % assign the cur_task to a new parent
     new_s = s;
     new_s(cur_task) = parents(end) + 1;
-    S(:, end) = reorder(new_s);
+    % S(:, end) = reorder(new_s);
+    S(:, end) = new_s;
 
     disp(S);
 end
@@ -188,8 +192,8 @@ function W = Su_Optimization(X, Y, s, m)
 
     % model parameter range
     if m == 1
-        param_range = [0.01 0.1 1 10 100 1000 10000 100000 1000000];
-        alpha_range = [0.25 0.5 0.75 0.85 1];
+        param_range = [0.01 1 100 1000 10000 100000 1000000];
+        alpha_range = [0.25 0.5 0.75 1];
     else
         param_range = [1, 1000000];
         alpha_range = 1;
