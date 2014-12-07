@@ -30,6 +30,10 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     % parfor related
     parpool;
 
+    % use a dictionary to store explored tree structures.
+    % explore a tree structure at most 5 times. Use the average afterwards.
+    % treeDict = containers.Map;
+
     for i = 1:Iterations
         fprintf('Iteration: %d/%d\n', i, Iterations);
         order = randperm(num_tasks); % generate a random order for tree proposal
@@ -67,7 +71,7 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
         end
 
         % terminate if the s vector does not change
-        s = reorder(s);
+        % s = reorder(s);
         disp(s);
         if isequal(last_s, s)
             break
@@ -108,7 +112,7 @@ function S = treeProposals(s, cur_task)
         if parents(i) ~= s(cur_task)
             cur_s = s;
             cur_s(cur_task) = parents(i);
-            S(:, c) = cur_s;
+            S(:, c) = reorder(cur_s);
             c = c + 1;
         end
     end
@@ -116,8 +120,9 @@ function S = treeProposals(s, cur_task)
     % assign the cur_task to a new parent
     new_s = s;
     new_s(cur_task) = parents(end) + 1;
-    S(:, end) = new_s;
+    S(:, end) = reorder(new_s);
 
+    disp(S);
 end
 
 
@@ -134,7 +139,7 @@ function W = trainTrees(S, X, Y)
 
     for i = 1:num_pps
         s = S(:, i);
-        cur_W = Su_Optimization(X, Y, s);
+        cur_W = Su_Optimization(X, Y, s, 1);
 
         % % build model using the optimal parameter
         % W = SolveTreeBased_ElasticNet( X, Y, s, best_param(1), best_param(2), ...
@@ -159,8 +164,7 @@ function W = parTrainTrees(S, X, Y)
 
     parfor i = 1:num_pps
         s = S(:, i);
-        cur_W = Su_Optimization(X, Y, s);
-
+        cur_W = Su_Optimization(X, Y, s, 0);
         W(:, :, i) = cur_W;
     end
 
@@ -168,7 +172,8 @@ end
 
 
 %% Su_Optimization
-function W = Su_Optimization(X, Y, s)
+function W = Su_Optimization(X, Y, s, m)
+    % m is mode. 0: fewer parameters. 1: more parameters
     addpath('../train_and_test/');
 
     eval_func_str = 'eval_MTL_mse';
@@ -182,11 +187,13 @@ function W = Su_Optimization(X, Y, s)
     opts.maxIter = 100;
 
     % model parameter range
-    % param_range = [0.001 0.01 0.1 1 10 100 1000 10000];
-    % alpha_range = [0 0.25 0.5 0.75 1];
-    param_range = [1, 1000000];
-    % alpha_range = [0.25, 0.75];
-    alpha_range = 1;
+    if m == 1
+        param_range = [0.01 0.1 1 10 100 1000 10000 100000 1000000];
+        alpha_range = [0.25 0.5 0.75 0.85 1];
+    else
+        param_range = [1, 1000000];
+        alpha_range = 1;
+    end
 
     ff = @(x, y, rho1, rho2, rho3, alpha, opts) ...
         SolveTreeBased_ElasticNet(x, y, s, rho1, rho2, rho3, alpha);
