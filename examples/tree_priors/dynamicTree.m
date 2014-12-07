@@ -1,5 +1,5 @@
 %% main function
-function [final_W, final_p, s] = dynamicTree(data, Iterations)
+function [final_W, s] = dynamicTree(data, Iterations)
     % Input:
     % data is a cell array name. It should follow the same convention
     % as the school dataset
@@ -23,12 +23,13 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     last_p = 10e5;
 
     % generate a split of data here. 'TH' means 'Train' plus 'Hold out' data
-    [THX, THY, testX, testY] = splitDataset(data, 0.8);
-    TH.X = THX;
-    TH.Y = THY;
+    % [THX, THY, testX, testY] = splitDataset(data, 0.8);
+    % TH.X = THX;
+    % TH.Y = THY;
+    TH = data;
 
-    % parfor related
-    parpool;
+    % parfor related turned on in testDynamicTree
+    % parpool;
 
     % use a dictionary to store explored tree structures.
     % explore a tree structure at most 5 times. Use the average afterwards.
@@ -80,11 +81,11 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
     % train the whole data again using the converged s vector.
     % fprintf('Final tree is\n');
     % disp(s);
-    final_W = trainTrees(s, THX, THY);
-    final_p = testTrees(final_W, testX, testY);
+    final_W = trainTrees(s, TH.X, TH.Y);
+    % final_p = testTrees(final_W, testX, testY);
 
-    % parfor related
-    delete(gcp);
+    % parfor related turned on in testDynamicTree
+    % delete(gcp);
 
 end
 
@@ -190,7 +191,7 @@ function W = Su_Optimization(X, Y, s, m)
 
     % model parameter range
     if m == 1
-        param_range = [0.01 1 100 1000 10000 100000 1000000];
+        param_range = [0.001 1 1000 1000000];
         alpha_range = [0.25 0.5 0.75 1];
     else
         param_range = [1, 1000000];
