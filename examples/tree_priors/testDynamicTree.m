@@ -11,7 +11,7 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
     num_feats = size(data.X{1}, 2);
     num_tasks = length(data.X);
 
-    all_trial = 2;
+    all_trial = 1;
     all_rmse  = zeros(3, all_trial);
     all_s     = zeros(num_tasks, all_trial);
     all_W     = zeros(num_feats, num_tasks, all_trial);
