@@ -55,32 +55,31 @@ function [final_W, final_p, s] = dynamicTree(data, Iterations)
             % cur_P: proposal * 1
             cur_P = testTrees(cur_W, holdX, holdY);
             [min_p, min_idx] = min(cur_P);
-            disp(S);
-            disp(cur_P);
+            % disp(S);
+            % disp(cur_P);
 
             % metropolis criterion
             p = min([1, e^(-b*(min_p - last_p))]);
             d = binornd(1, p);
-            disp(d);
+            % disp(d);
             if d == 1
                 s = S(:, min_idx);
                 last_p = min_p;
             end
-            disp(last_p);
+            % disp(last_p);
 
         end
 
         % terminate if the s vector does not change
         s = reorder(s);
-        disp(s);
         if isequal(last_s, s)
             break
         end
     end
 
     % train the whole data again using the converged s vector.
-    fprintf('Final tree is\n');
-    disp(s);
+    % fprintf('Final tree is\n');
+    % disp(s);
     final_W = trainTrees(s, THX, THY);
     final_p = testTrees(final_W, testX, testY);
 
@@ -126,7 +125,6 @@ function S = treeProposals(s, cur_task)
     % S(:, end) = reorder(new_s);
     S(:, end) = new_s;
 
-    disp(S);
 end
 
 
