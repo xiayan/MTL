@@ -21,6 +21,10 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
     for tt = 1:all_trial
         % split data into training and testing.
         [trainX, trainY, testX, testY] = mtSplitPerc(data.X, data.Y, 0.8);
+        save('trainX', 'trainX');
+        save('trainY', 'trainY');
+        save('testX', 'testX');
+        save('testY', 'testY');
         train.X = trainX;
         train.Y = trainY;
         [W, s] = dynamicTree(train, 5);
