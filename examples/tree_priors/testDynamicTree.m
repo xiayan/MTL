@@ -23,7 +23,7 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
         [trainX, trainY, testX, testY] = mtSplitPerc(data.X, data.Y, 0.8);
         train.X = trainX;
         train.Y = trainY;
-        [W, s] = dynamicTree(train, 100);
+        [W, s] = dynamicTree(train, 5);
 
         % show final performance
         [f_mse, f_rss, f_tss] = eval_MTL_mse(testY, testX, W);

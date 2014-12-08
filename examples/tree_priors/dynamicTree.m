@@ -66,6 +66,8 @@ function [final_W, s] = dynamicTree(data, Iterations)
             if d == 1
                 s = S(:, min_idx);
                 last_p = min_p;
+                save('last_s', 's');
+                save('last_W.mat', 'cur_W');
             end
             % disp(last_p);
 
