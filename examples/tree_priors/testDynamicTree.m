@@ -17,6 +17,9 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
     all_W     = zeros(num_feats, num_tasks, all_trial);
 
     % parpool('local');
+	if matlabpool('size') == 0 % checking to see if my pool is already open
+		matlabpool open 10
+	end
 
     for tt = 1:all_trial
         % split data into training and testing.
@@ -41,7 +44,7 @@ function [all_W, dynamicErrors, all_s] = testDynamicTree(data)
     dynamicErrors(:,1:3) = all_rmse';
     dynamicErrors(:,4) = 1 - ( dynamicErrors(:, 2) ./ dynamicErrors(:, 3) );
 
-    delete(gcp);
+    %delete(gcp);
 
     save('dynamicW.mat','all_W');
     save('dynamicErrors.mat','dynamicErrors');

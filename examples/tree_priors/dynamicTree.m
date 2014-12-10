@@ -45,7 +45,8 @@ function [final_W, s] = dynamicTree(data, Iterations)
             % Train each tree proposal using a same train set
             % Test proposals on a same test set, and keep the best tree
             cur_task = order(t);
-            fprintf('Processing task %d\n', cur_task);
+            fprintf('Processing task %d, task order %d, iteration %d/%d\n',...
+				   	cur_task, t, i, Iterations);
 
             % S contains all different trees. tasks * proposal
             S = treeProposals(s, cur_task);
@@ -66,7 +67,7 @@ function [final_W, s] = dynamicTree(data, Iterations)
             if d == 1
                 s = S(:, min_idx);
                 last_p = min_p;
-                save('last_s', 's');
+                save('last_s.mat', 's');
                 save('last_W.mat', 'cur_W');
             end
             % disp(last_p);
