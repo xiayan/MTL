@@ -1,4 +1,4 @@
-function [fixedW, fixedErrors] = testFixedTree(data, Clusters)
+function [fixedW, fixedErrors, best_param] = testFixedTree(data, Clusters)
     %%
     % data should follow the school dataset format. It should also be renormalized
     %
@@ -37,16 +37,25 @@ function [fixedW, fixedErrors] = testFixedTree(data, Clusters)
         opts.maxIter = 100;
 
         % model parameter range
-        param_range = [0.1 1 10 100 1000 10000 100000];
-        alpha_range = [0.25 0.5 0.75 1];
+        % param_range = [0.1 10 1000 100000];
+        % alpha_range = [0.25 0.5 0.75 1];
+        % param_range = [0.05 0.1 10 50 100];
+        % alpha_range = [0.9 0.95 1.0];
+        p1 = [100, 200, 400];
+        p2 = [0.1, 0.2, 0.4];
+        p3 = [0.05 0.1 0.2];
+        p4 = 0.9;
 
         ff = @(x, y, rho1, rho2, rho3, alpha, opts) ...
             SolveTreeBased_ElasticNet(x, y, Clusters, rho1, rho2, rho3, alpha);
 
         fprintf('Perform model selection via cross validation: \n')
+        % [ best_param, ~ ] = CrossValidation4Param_alpha...
+        %     ( X_tr, Y_tr, ff, opts, param_range, param_range, param_range, ...
+        %     alpha_range, cv_fold, eval_func_str, higher_better);
         [ best_param, ~ ] = CrossValidation4Param_alpha...
-            ( X_tr, Y_tr, ff, opts, param_range, param_range, param_range, ...
-            alpha_range, cv_fold, eval_func_str, higher_better);
+            ( X_tr, Y_tr, ff, opts, p1, p2, p3, p4, ...
+            cv_fold, eval_func_str, higher_better);
 
         % build model using the optimal parameter
         fixedW = SolveTreeBased_ElasticNet(X_tr, Y_tr, Clusters, ...
@@ -62,8 +71,8 @@ function [fixedW, fixedErrors] = testFixedTree(data, Clusters)
     fixedErrors(:,1:3) = all_rmse';
     fixedErrors(:,4) = 1 - ( fixedErrors(:, 2) ./ fixedErrors(:, 3) );
 
-    save('fixedW.mat','fixedW');
-    save('fixedErrors.mat','fixedErrors');
-    save('fixedBest.mat','best_param');
+    save('fixedSchoolW.mat','fixedW');
+    save('fixedSchoolErrors.mat','fixedErrors');
+    save('fixedSchoolBest.mat','best_param');
     % save('perf.mat','perform_mat');
 
